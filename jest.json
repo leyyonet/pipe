@@ -1,0 +1,18 @@
+{
+  "moduleFileExtensions": [
+    "ts",
+    "tsx",
+    "js",
+    "json"
+  ],
+  "verbose": true,
+  "setupFiles": [
+    "<rootDir>/.jest/setEnvVars.js"
+  ],
+  "transform": {
+    "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+  },
+  "testRegex": "/test/.*\\.spec.ts$",
+  "collectCoverageFrom" : ["src/**/*.{js,jsx,tsx,ts}", "!**/node_modules/**", "!**/vendor/**", "!**/_backup/**"],
+  "coverageReporters": ["json", "lcov"]
+}
