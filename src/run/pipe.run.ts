@@ -9,7 +9,7 @@ import {
     CallScopePro,
     CallWhenAsync,
     CallWhenSync
-} from "@leyyo/call";
+} from "@leyyo/http-call";
 import {FQN_PCK} from "../internal";
 import {Ctx} from "@leyyo/http";
 import {pipeIgnore} from "../ignore";

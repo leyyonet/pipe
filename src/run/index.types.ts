@@ -2,7 +2,7 @@ import {ClassReflectionLike, PropertyReflectionLike} from "@leyyo/core";
 import {ClassLike, Dict, ExceptionLike, Fnc} from "@leyyo/common";
 import {Ctx} from "@leyyo/http";
 import {PipeDirPro} from "../pool";
-import {CallCurrent, CallParams} from "@leyyo/call";
+import {CallCurrent, CallParams} from "@leyyo/http-call";
 
 
 export interface PipeRunLike {

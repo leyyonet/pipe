@@ -39,9 +39,9 @@ class PipeIgnore implements PipeIgnoreLike {
         this.temporaryClasses = $repo.newMap(FQN_PCK, 'temp.classes');
         this.temporaryMethods = $repo.newMap(FQN_PCK, 'temp.methods');
 
-        lifecycle.onInitialize(10, 'PipeIgnore', () => this.initialize());
-        lifecycle.onRedundant(10, 'PipeIgnore', () => this._logRedundants());
-        lifecycle.onClear(10, 'PipeIgnore', () => {
+        lifecycle.onInitialize(FQN_PCK, () => this.initialize());
+        lifecycle.onClear(FQN_PCK, () => {
+            this._logRedundants();
             this.temporaryClasses.clear();
             this.temporaryMethods.clear();
             this.redundantMessages.splice(0, this.redundantMessages.length);

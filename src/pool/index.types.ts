@@ -1,5 +1,5 @@
 import {ClassReflectionLike, DecoInstanceLike, ParameterReflectionLike, PropertyReflectionLike} from "@leyyo/core";
-import {CallItem, CallOpt, CallOptPro, CallParams} from "@leyyo/call";
+import {CallItem, CallOpt, CallOptPro, CallParams} from "@leyyo/http-call";
 import {PipeCurrent, TransformResult} from "../run";
 
 /**

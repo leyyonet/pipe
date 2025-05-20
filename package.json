@@ -52,12 +52,13 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@leyyo/cast": "file:../cast",
     "@leyyo/common": "file:../common",
     "@leyyo/core": "file:../core",
+    "@leyyo/injection": "file:../injection",
+    "@leyyo/cast": "file:../cast",
     "@leyyo/error-enveloper": "^1.0.2",
     "@leyyo/scalar": "file:../scalar",
-    "@leyyo/call": "file:../call",
-    "@leyyo/http": "file:../http"
+    "@leyyo/http": "file:../http",
+    "@leyyo/http-call": "file:../http-call"
   }
 }
