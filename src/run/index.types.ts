@@ -6,9 +6,10 @@ import {CallCurrent, CallParams} from "@leyyo/http-call";
 
 
 export interface PipeRunLike {
-    forClass(dir: PipeDirPro, clazz: ClassReflectionLike | Fnc | ClassLike, ctx: Ctx, values: Dict, prevField?: string): Promise<RunResult>;
-
-    forMethod(dir: PipeDirPro, method: PropertyReflectionLike, ctx: Ctx, values: Array<any>, ignoredIndexes: Array<number>): Promise<Array<any>>;
+    hasClass(dir: PipeDirPro, clazz: ClassReflectionLike | Fnc | ClassLike): boolean;
+    runForClass(dir: PipeDirPro, clazz: ClassReflectionLike | Fnc | ClassLike, ctx: Ctx, values: Dict, prevField?: string): Promise<RunResult>;
+    hasMethod(dir: PipeDirPro, methodRef: PropertyReflectionLike, ignoredIndexes: Array<number>): boolean;
+    runForMethod(dir: PipeDirPro, method: PropertyReflectionLike, ctx: Ctx, values: Array<any>, ignoredIndexes: Array<number>): Promise<Array<any>>;
 }
 
 export interface RunResult<E = any> {

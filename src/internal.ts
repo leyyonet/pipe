@@ -1,1 +1,1 @@
-export const FQN_PCK = 'leyyo.pipe';
+export const FQN = 'leyyo.pipe';

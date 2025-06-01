@@ -10,12 +10,12 @@ import {
     CallWhenAsync,
     CallWhenSync
 } from "@leyyo/http-call";
-import {FQN_PCK} from "../internal";
+import {FQN} from "../internal";
 import {Ctx} from "@leyyo/http";
 import {pipeIgnore} from "../ignore";
 import {PipeDirPro, PipeItem, PipeLambdaAsync, PipeLambdaSync, PipeOptPro, pipePool} from "../pool";
 
-@Fqn(FQN_PCK)
+@Fqn(FQN)
 class PipeRun implements PipeRunLike {
     private readonly logger = $log.create(PipeRun);
     private readonly _IGNORED = [String, Number, Date, Boolean, BigInt, Array, Object, Buffer, RegExp] as Array<any>;
@@ -25,8 +25,8 @@ class PipeRun implements PipeRunLike {
 
     constructor() {
         this.callOptionSecure = callOption.$secure;
-        this.cachedErrors = $repo.newMap(FQN_PCK, 'cachedErrors');
-        this.cachedProperties = $repo.newMap(FQN_PCK, 'cachedProperties');
+        this.cachedErrors = $repo.newMap(FQN, 'cachedErrors');
+        this.cachedProperties = $repo.newMap(FQN, 'cachedProperties');
 
         setTimeout(() => this._clearCache(), 60 * 60 * 1000);
     }
@@ -288,7 +288,7 @@ class PipeRun implements PipeRunLike {
         };
     }
 
-    async forClass(dir: PipeDirPro, clazz: ClassReflectionLike | Fnc | ClassLike, ctx: Ctx, value: Dict, prevField?: string): Promise<RunResult> {
+    async runForClass(dir: PipeDirPro, clazz: ClassReflectionLike | Fnc | ClassLike, ctx: Ctx, value: Dict, prevField?: string): Promise<RunResult> {
         const result = {errors: [], value} as RunResult;
         if (this._IGNORED.includes(clazz)) {
             return result;
@@ -364,7 +364,7 @@ class PipeRun implements PipeRunLike {
                 }
             }
             if (this._checkDeepTypes(fieldRef.type)) {
-                const classResult = await this.forClass(dir, fieldRef.type as Fnc, ctx, result.value[f], field);
+                const classResult = await this.runForClass(dir, fieldRef.type as Fnc, ctx, result.value[f], field);
                 result.value[f] = classResult.value;
                 result.errors.push(...classResult.errors);
             }
@@ -372,7 +372,7 @@ class PipeRun implements PipeRunLike {
             if ($is.object(runtimeValue)) {
                 const runtimeType = (runtimeValue as Obj).constructor;
                 if (runtimeType !== fieldRef.type && this._checkDeepTypes(runtimeType)) {
-                    const classResult = await this.forClass(dir, runtimeType as Fnc, ctx, runtimeValue, field);
+                    const classResult = await this.runForClass(dir, runtimeType as Fnc, ctx, runtimeValue, field);
                     result.value[f] = classResult.value;
                     result.errors.push(...classResult.errors);
                 }
@@ -381,7 +381,87 @@ class PipeRun implements PipeRunLike {
         return result;
     }
 
-    async forMethod(dir: PipeDirPro, methodRef: PropertyReflectionLike, ctx: Ctx, value: Array<any>, ignoredIndexes: Array<number>): Promise<Array<any>> {
+    hasClass(dir: PipeDirPro, clazz: ClassReflectionLike | Fnc | ClassLike): boolean {
+        if (this._IGNORED.includes(clazz)) {
+            return false;
+        }
+        let ref: ClassReflectionLike;
+        if (clazz instanceof ClassReflection) {
+            ref = clazz;
+        } else {
+            ref = reflectionPool.get(clazz, false);
+            if (!ref) {
+                return false;
+            }
+        }
+        const typeInfo = pipeIgnore.forType(dir, ref);
+        if (typeInfo.all) {
+            return false;
+        }
+        const ignoredDecorators = typeInfo.decorators;
+
+        // for self
+        const selfItems = pipePool.typeClassItems(dir, ref);
+        if (selfItems.filter(item => item.opt.dir === dir && !ignoredDecorators.includes(item.deco)).length > 0) {
+            return true;
+        }
+
+        // for properties
+        for (const fieldRef of this._fromFieldCache(ref)) {
+            const propItems = pipePool.dtoPropertyItems(dir, fieldRef);
+            if (propItems.filter(item => item.opt.dir === dir && !ignoredDecorators.includes(item.deco)).length > 0) {
+                return true;
+            }
+            if (this._checkDeepTypes(fieldRef.type) && this.hasClass(dir, fieldRef.type as Fnc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    hasMethod(dir: PipeDirPro, methodRef: PropertyReflectionLike, ignoredIndexes: Array<number>): boolean {
+        const paramRefList = methodRef.listParameters();
+        if (paramRefList.length < 1) {
+            return false;
+        }
+        const info = pipePool.endpointInfo(methodRef);
+        if (!info.$any) {
+            return false;
+        }
+        const appInfo = pipeIgnore.forApplication(dir);
+        if (appInfo.all) {
+            return false;
+        }
+        const controllerInfo = pipeIgnore.forController(dir, methodRef.clazz);
+        if (controllerInfo.all) {
+            return false;
+        }
+        const selfInfo = pipeIgnore.forEndpoint(dir, methodRef);
+        if (selfInfo.all) {
+            return false;
+        }
+        const ignoredDecorators = [...appInfo.decorators, ...controllerInfo.decorators, ...selfInfo.decorators];
+
+        for (const paramRef of paramRefList) {
+            if (ignoredIndexes.includes(paramRef.index)) {
+                continue;
+            }
+            const items = pipePool.parameterItems(dir, paramRef);
+            items.push(
+                ...pipePool.applicationItems(dir, paramRef.name),
+                ...pipePool.controllerItems(dir, methodRef.clazz, paramRef.name),
+                ...pipePool.endpointItems(dir, methodRef, paramRef.name)
+            );
+            if (items.filter(item => item.opt.dir === dir && !ignoredDecorators.includes(item.deco)).length > 0) {
+                return true;
+            }
+            if (this._checkDeepTypes(paramRef.type) && this.hasClass(dir, paramRef.type as Fnc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    async runForMethod(dir: PipeDirPro, methodRef: PropertyReflectionLike, ctx: Ctx, value: Array<any>, ignoredIndexes: Array<number>): Promise<Array<any>> {
         const result = {errors: [], value} as RunResult<Array<any>>;
 
         if (!Array.isArray(result.value)) {
@@ -451,7 +531,7 @@ class PipeRun implements PipeRunLike {
                 }
             }
             if (this._checkDeepTypes(paramRef.type)) {
-                const classResult = await this.forClass(dir, paramRef.type as Fnc, ctx, result.value[paramRef.index], field);
+                const classResult = await this.runForClass(dir, paramRef.type as Fnc, ctx, result.value[paramRef.index], field);
                 result.value[paramRef.index] = classResult.value;
                 result.errors.push(...classResult.errors);
             }
@@ -459,7 +539,7 @@ class PipeRun implements PipeRunLike {
             if ($is.object(runtimeValue)) {
                 const runtimeType = (runtimeValue as Obj).constructor;
                 if (runtimeType !== paramRef.type && this._checkDeepTypes(runtimeType)) {
-                    const classResult = await this.forClass(dir, runtimeType as Fnc, ctx, runtimeValue, field);
+                    const classResult = await this.runForClass(dir, runtimeType as Fnc, ctx, runtimeValue, field);
                     result.value[paramRef.index] = classResult.value;
                     result.errors.push(...classResult.errors);
                 }

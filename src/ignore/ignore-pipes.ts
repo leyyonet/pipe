@@ -1,6 +1,6 @@
 import {decoratorPool} from "@leyyo/core";
 import {$assert, $dev, Dict, Func} from "@leyyo/common";
-import {FQN_PCK} from "../internal";
+import {FQN} from "../internal";
 import {IgnorePipesOpt} from "./index.types";
 import {pipeIgnore} from "./pipe.ignore";
 
@@ -19,7 +19,7 @@ export function IgnorePipes(allOrDecorators: true | Array<Func | string> = true)
 }
 
 const deco = decoratorPool.newId<IgnorePipesOpt, Dict, P>(IgnorePipes)
-    .fqn(FQN_PCK)
+    .fqn(FQN)
     .targets('class', 'method')
     .keywords('manageable')
     .processor((ins, p) => {

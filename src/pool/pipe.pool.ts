@@ -11,7 +11,7 @@ import {
     reflectionPool
 } from "@leyyo/core";
 import {$assert, $descriptor, $dev, $is, $repo, List} from "@leyyo/common";
-import {FQN_PCK} from "../internal";
+import {FQN} from "../internal";
 import {callItem, callOption, CallParams, OptKeyCondition} from "@leyyo/http-call";
 import {
     PipeAddGiven,
@@ -32,7 +32,7 @@ import {
 import {httpSigner} from "@leyyo/http";
 import {IdPipe} from "../index.symbols";
 
-@Fqn(FQN_PCK)
+@Fqn(FQN)
 class PipePool implements PipePoolLike {
     private readonly KEYS = ['scope', 'when'] as Array<keyof PipeOpt>;
     private readonly CONDITION = {
@@ -56,17 +56,17 @@ class PipePool implements PipePoolLike {
     private readonly _dtoPropertyItems: Map<PropertyReflectionLike, PipeItemCollection>;
 
     constructor() {
-        this._usedDecoratorInstances = $repo.newList(FQN_PCK, 'usedDecoratorInstances');
-        this._endpointInfo = $repo.newMap(FQN_PCK, 'endpointInfo');
+        this._usedDecoratorInstances = $repo.newList(FQN, 'usedDecoratorInstances');
+        this._endpointInfo = $repo.newMap(FQN, 'endpointInfo');
 
         this._applicationItems = this._newCollection3d();
-        this._controllerItems = $repo.newMap(FQN_PCK, 'controllerItems');
-        this._endpointItems = $repo.newMap(FQN_PCK, 'endpointItems');
-        this._parameterItems = $repo.newMap(FQN_PCK, 'parameterItems');
-        this._typeClassItems = $repo.newMap(FQN_PCK, 'typeClassItems');
-        this._dtoPropertyItems = $repo.newMap(FQN_PCK, 'dtoPropertyItems');
+        this._controllerItems = $repo.newMap(FQN, 'controllerItems');
+        this._endpointItems = $repo.newMap(FQN, 'endpointItems');
+        this._parameterItems = $repo.newMap(FQN, 'parameterItems');
+        this._typeClassItems = $repo.newMap(FQN, 'typeClassItems');
+        this._dtoPropertyItems = $repo.newMap(FQN, 'dtoPropertyItems');
 
-        lifecycle.onClear(FQN_PCK, () => {
+        lifecycle.onClear(FQN, () => {
             this._findRedundant();
             this._usedDecoratorInstances.clear();
         })
