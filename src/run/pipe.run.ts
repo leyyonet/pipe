@@ -27,8 +27,6 @@ class PipeRun implements PipeRunLike {
         this.callOptionSecure = callOption.$secure;
         this.cachedErrors = $repo.newMap(FQN, 'cachedErrors');
         this.cachedProperties = $repo.newMap(FQN, 'cachedProperties');
-
-        setTimeout(() => this._clearCache(), 60 * 60 * 1000);
     }
 
     private _clearCache(): void {
@@ -37,8 +35,6 @@ class PipeRun implements PipeRunLike {
         }
         this.cachedErrors.clear();
         this.cachedProperties.clear();
-
-        setTimeout(() => this._clearCache(), 60 * 60 * 1000);
     }
 
     private _bindError<P extends CallParams = CallParams>(current: PipeCurrent<P>, causedBy: Error): ExceptionLike {
